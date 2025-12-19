@@ -133,7 +133,9 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      // Hata Düzeltme: 'gemini-3-pro-preview' yerine 'gemini-3-flash-preview' kullanıldı.
+      // Flash modeli daha yüksek kota limitlerine sahiptir ve "Servis Yoğun" hatasını engeller.
+      model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -156,14 +158,14 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
   } catch (error: any) {
     const errMsg = error?.message || error?.toString() || "";
     
-    // API Key kısıtlama hatası (Güvenlik ayarları çok sıkıysa)
+    // API Key kısıtlama hatası
     if (errMsg.includes("403") || errMsg.includes("PERMISSION_DENIED")) {
-        throw new Error("Erişim reddedildi. Google Cloud Console'dan 'Browser Restrictions' (Web Kısıtlamaları) ayarlarınızı kontrol edin.");
+        throw new Error("Erişim reddedildi. Google Cloud Console ayarlarını kontrol edin.");
     }
     
-    // Kota aşımı
+    // Kota aşımı (Hala olursa mesaj daha net)
     if (errMsg.includes("429") || errMsg.includes("QUOTA")) {
-        throw new Error("Servis şu an çok yoğun. Lütfen 1 dakika sonra tekrar deneyin.");
+        throw new Error("Servis şu an yoğun, lütfen saniyeler içinde tekrar deneyin (Kota Limiti).");
     }
 
     throw new Error(`Plan oluşturulamadı: ${errMsg}`);
