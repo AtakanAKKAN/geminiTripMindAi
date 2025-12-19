@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Trip, TripDay, TransportType, PaceType } from '../types';
 import { PlaceCard } from './PlaceCard';
 import { MapComponent } from './MapComponent';
-import { generateDaySummary } from '../services/geminiService';
 
 interface ItineraryViewProps {
   trip: Trip;
@@ -14,31 +13,12 @@ interface ItineraryViewProps {
 
 export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onReset, onSwapPlace, onRegenerateDay, isSwappingItem }) => {
   const [activeDay, setActiveDay] = useState<number>(1);
-  const [daySummaries, setDaySummaries] = useState<Record<number, string>>({});
-  const [isSummarizing, setIsSummarizing] = useState(false);
   const [showMobileMap, setShowMobileMap] = useState(false); 
   const [showHotels, setShowHotels] = useState(false);
   const [showTransport, setShowTransport] = useState(false);
   const [showDining, setShowDining] = useState(false);
 
   const currentDay: TripDay | undefined = trip.tripDays.find(d => d.dayNumber === activeDay);
-
-  useEffect(() => {
-    const fetchSummary = async () => {
-      if (currentDay && !daySummaries[activeDay]) {
-        setIsSummarizing(true);
-        try {
-            const summary = await generateDaySummary(trip.city, currentDay);
-            setDaySummaries(prev => ({ ...prev, [activeDay]: summary }));
-        } catch (e) {
-            setDaySummaries(prev => ({ ...prev, [activeDay]: `Plan hazır.` }));
-        } finally {
-            setIsSummarizing(false);
-        }
-      }
-    };
-    fetchSummary();
-  }, [activeDay, currentDay, trip.city]);
 
   const formatReviewCount = (count: number) => {
     if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
@@ -122,7 +102,9 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onReset, onS
                 </div>
                 <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">GÜNÜN ÖZETİ</h4>
              </div>
-            {isSummarizing ? <div className="animate-pulse h-3 bg-emerald-200/50 rounded w-3/4"></div> : <p className="text-gray-700 text-xs md:text-sm font-medium leading-relaxed relative z-10">{daySummaries[activeDay]}</p>}
+             <p className="text-gray-700 text-xs md:text-sm font-medium leading-relaxed relative z-10">
+                 {currentDay.summary || `${trip.city} gezisinin ${currentDay.dayNumber}. günü için harika bir plan.`}
+             </p>
           </div>
 
           {/* Konaklama Kutusu */}

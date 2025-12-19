@@ -106,7 +106,8 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
     2. YEMEK (DINING): Her gün için 3 öğün önerisi (Sabah, Öğle, Akşam). ${foodInstruction}
     3. KONAKLAMA: 4 otel önerisi.
     4. ULAŞIM: Şehir kartı ve uygulama bilgisi.
-    5. KOORDİNATLAR: Gerçek Google Maps koordinatları.
+    5. GÜNLÜK ÖZET (SUMMARY): Her gün için o günün rotasını anlatan 1 cümlelik kısa, motive edici özet.
+    6. KOORDİNATLAR: Gerçek Google Maps koordinatları.
   `;
 
   const tripResponseSchema = {
@@ -121,10 +122,11 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
               properties: {
                 id: { type: Type.STRING },
                 dayNumber: { type: Type.INTEGER },
+                summary: { type: Type.STRING, description: "O günkü gezi rotasını özetleyen 1 cümlelik motive edici metin." },
                 items: { type: Type.ARRAY, items: dayItemSchema },
                 diningRecommendations: { type: Type.ARRAY, items: dayItemSchema }
               },
-              required: ["id", "dayNumber", "items", "diningRecommendations"]
+              required: ["id", "dayNumber", "items", "diningRecommendations", "summary"]
             }
           }
       },
@@ -133,8 +135,6 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
 
   try {
     const response = await ai.models.generateContent({
-      // Hata Düzeltme: 'gemini-3-pro-preview' yerine 'gemini-3-flash-preview' kullanıldı.
-      // Flash modeli daha yüksek kota limitlerine sahiptir ve "Servis Yoğun" hatasını engeller.
       model: 'gemini-3-flash-preview', 
       contents: prompt,
       config: {
@@ -158,31 +158,16 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
   } catch (error: any) {
     const errMsg = error?.message || error?.toString() || "";
     
-    // API Key kısıtlama hatası
     if (errMsg.includes("403") || errMsg.includes("PERMISSION_DENIED")) {
         throw new Error("Erişim reddedildi. Google Cloud Console ayarlarını kontrol edin.");
     }
     
-    // Kota aşımı (Hala olursa mesaj daha net)
     if (errMsg.includes("429") || errMsg.includes("QUOTA")) {
         throw new Error("Servis şu an yoğun, lütfen saniyeler içinde tekrar deneyin (Kota Limiti).");
     }
 
     throw new Error(`Plan oluşturulamadı: ${errMsg}`);
   }
-};
-
-export const generateDaySummary = async (city: string, day: TripDay): Promise<string> => {
-    const ai = getClient();
-    if (!ai) return `${city} gezisi planlandı.`;
-
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: `"${city}" gezisinin ${day.dayNumber}. günü için 1 cümlelik motive edici, kısa bir özet yaz.`
-        });
-        return response.text?.trim() || `${city} harika görünüyor.`;
-    } catch { return `${city} gezisi hazır.`; }
 };
 
 export const swapPlaceWithGemini = async (city: string, currentPlace: Place): Promise<Place> => {
