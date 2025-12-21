@@ -9,13 +9,21 @@ export default defineConfig(({ mode }) => {
   
   // 2. process.env (Vercel Build Environment) veya env dosyası değerini al
   const apiKey = process.env.API_KEY || env.API_KEY;
+  
+  // REVİZE: Hardcoded fallback değerler kaldırıldı.
+  // Kullanıcı adı ve şifre sadece ENV dosyasından veya sistem değişkenlerinden okunacak.
+  const adminUser = process.env.ADMIN_USERNAME || env.ADMIN_USERNAME;
+  const adminPass = process.env.ADMIN_PASSWORD || env.ADMIN_PASSWORD;
 
   return {
     plugins: [react()],
     define: {
       // Kodun içindeki 'process.env.API_KEY' metnini, gerçek anahtar değeriyle (string olarak) değiştirir.
-      // Eğer anahtar yoksa "undefined" stringi yerine undefined değeri döner.
-      'process.env.API_KEY': apiKey ? JSON.stringify(apiKey) : undefined
+      'process.env.API_KEY': apiKey ? JSON.stringify(apiKey) : undefined,
+      
+      // Admin bilgileri env üzerinden okunacak, tanımlı değilse undefined kalır
+      'process.env.ADMIN_USERNAME': adminUser ? JSON.stringify(adminUser) : undefined,
+      'process.env.ADMIN_PASSWORD': adminPass ? JSON.stringify(adminPass) : undefined
     }
   };
 });

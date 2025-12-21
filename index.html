@@ -10,6 +10,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/manifest.json" />
+    <!-- REVİZE 3: Favicon eklendi -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     
     <title>TripMind AI - Akıllı Gezi Planlayıcısı</title>
@@ -22,6 +24,7 @@
 
     <script>
       tailwind.config = {
+        darkMode: 'class', // Kullanıcı seçimine göre dark mode
         theme: {
           extend: {
             fontFamily: {
@@ -73,7 +76,18 @@
         overscroll-behavior-y: none; /* Lastik efektini engeller */
         -webkit-tap-highlight-color: transparent; /* Mobilde tıklama grisini kaldırır */
         height: 100%;
+        /* Background rengi JS ile kontrol edilecek ama varsayılan verelim */
+    }
+
+    /* Dark Mode'da body rengi */
+    html.dark body {
+        background-color: #0f172a; /* Slate 900 */
+        color: #f8fafc;
+    }
+
+    html.light body {
         background-color: #F8FAFC;
+        color: #0f172a;
     }
     
     *::-webkit-scrollbar {
@@ -99,6 +113,14 @@
       transition: filter 0.3s ease;
     }
 
+    /* Harita Dark Mode Filtresi */
+    html.dark .leaflet-layer,
+    html.dark .leaflet-control-zoom-in,
+    html.dark .leaflet-control-zoom-out,
+    html.dark .leaflet-control-attribution {
+        filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+
     /* Splash Screen Stilleri */
     #splash-screen {
         position: fixed;
@@ -112,6 +134,11 @@
         align-items: center;
         justify-content: center;
         z-index: 9999;
+    }
+    
+    /* Splash dark mode */
+    html.dark #splash-screen {
+        background-color: #0f172a;
     }
     
     .splash-logo {
@@ -139,12 +166,17 @@
         animation: spin 1s ease-in-out infinite;
     }
 
+    html.dark .splash-loader {
+        border-color: #1e293b;
+        border-top-color: #10b981;
+    }
+
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
 </style>
 </head>
-  <body class="bg-gray-50 text-gray-900 antialiased selection:bg-emerald-100 selection:text-emerald-900">
+  <body class="bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 antialiased selection:bg-emerald-100 selection:text-emerald-900 dark:selection:bg-emerald-900 dark:selection:text-emerald-100">
     <div id="root">
         <!-- React Yüklenene Kadar Görülecek Splash Screen -->
         <div id="splash-screen">

@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Trip, CreateTripRequest, Place, DayItem, TripDay } from '../types';
+import { Trip, CreateTripRequest, Place, DayItem, TripDay, PaceType } from '../types';
 
 const cleanJsonString = (str: string) => {
   if (!str) return "{}";
@@ -66,12 +66,9 @@ const dayItemSchema = {
 };
 
 const getClient = () => {
-    // Güvenlik: API Key kod içine gömülü değildir. Vercel build zamanında enjekte edilir.
-    // Eğer 'undefined' geliyorsa, Vercel'de Redeploy yapılmamış demektir.
     const apiKey = process.env.API_KEY;
-    
     if (!apiKey) {
-        console.error("KRİTİK HATA: API_KEY bulunamadı. Vercel Environment Variables ayarlandıktan sonra REDEPLOY yapılmadı mı?");
+        console.error("KRİTİK HATA: API_KEY bulunamadı.");
         return null;
     }
     return new GoogleGenAI({ apiKey });
@@ -81,11 +78,10 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
   const ai = getClient();
   
   if (!ai) {
-      // Kullanıcıya teknik olmayan ama sorunu işaret eden bir mesaj
       throw new Error("Sistem bağlantı anahtarı eksik. Lütfen Vercel panelinden 'Redeploy' işlemini yapın.");
   }
 
-  const { city, days, transport, pace, budget, interests } = request;
+  const { city, days, transport, pace, budget, interests, customStopCount } = request;
 
   const hasFoodInterest = interests.some(i => i.toLowerCase().includes('yemek') || i.toLowerCase().includes('mutfak') || i.toLowerCase().includes('gastronomi'));
 
@@ -93,16 +89,28 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
     ? "Kullanıcı 'YEMEK' ilgi alanını seçti. Yemek önerileri (diningRecommendations) ÇOK ÖZEL ve YÖRESEL olsun."
     : "Yemek önerileri standart, temiz ve popüler yerler olsun.";
 
+  // Durak sayısı mantığı
+  let stopInstruction = "";
+  if (pace === PaceType.CUSTOM && customStopCount) {
+      stopInstruction = `HER GÜN İÇİN KESİNLİKLE TAM OLARAK ${customStopCount} adet gezi durağı (items) oluştur. Ne eksik ne fazla.`;
+  } else if (pace === PaceType.RELAXED) {
+      stopInstruction = "Her gün için yaklaşık 2-3 adet rahat gezilecek durak oluştur.";
+  } else if (pace === PaceType.MODERATE) {
+      stopInstruction = "Her gün için yaklaşık 4-5 adet durak oluştur.";
+  } else if (pace === PaceType.INTENSE) {
+      stopInstruction = "Her gün için yaklaşık 6-8 adet yoğun tempolu durak oluştur.";
+  }
+
   const prompt = `
     "${city}" şehri için ${days} günlük bir gezi planı istiyorum.
     
     KURALLAR:
     - Dil: Türkçe. Resmi ve samimi.
-    - Tempo: ${pace}.
-    - Ulaşım: ${transport}.
+    - Ulaşım Tercihi: ${transport}.
     - Bütçe: ${budget}.
+    - DURAK SAYISI KURALI: ${stopInstruction}
     
-    1. GEZİ ROTA YAPISI (ITEMS): Sadece turistik/tarihi/kültürel yerler.
+    1. GEZİ ROTA YAPISI (ITEMS): Sadece turistik/tarihi/kültürel yerler. ${stopInstruction}
     2. YEMEK (DINING): Her gün için 3 öğün önerisi (Sabah, Öğle, Akşam). ${foodInstruction}
     3. KONAKLAMA: 4 otel önerisi.
     4. ULAŞIM: Şehir kartı ve uygulama bilgisi.

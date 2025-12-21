@@ -1,5 +1,3 @@
-
-
 export enum TransportType {
   WALKING = 'WALKING',
   CAR = 'CAR',
@@ -9,7 +7,8 @@ export enum TransportType {
 export enum PaceType {
   RELAXED = 'RELAXED',
   MODERATE = 'MODERATE',
-  INTENSE = 'INTENSE'
+  INTENSE = 'INTENSE',
+  CUSTOM = 'CUSTOM' // Yeni seçenek
 }
 
 export enum BudgetType {
@@ -39,14 +38,13 @@ export enum TimeSlot {
 }
 
 export interface TransportInfo {
-  modeAdvice: string; // Otopark adı veya Durak adı
-  // Diğer alanlar (app, card) artık CityTransportInfo'ya taşındı
+  modeAdvice: string; 
 }
 
 export interface CityTransportInfo {
-    cardName: string; // İstanbulkart
-    appName: string; // Mobiett
-    generalAdvice: string; // Genel ulaşım tavsiyesi
+    cardName: string; 
+    appName: string; 
+    generalAdvice: string; 
 }
 
 export interface Place {
@@ -76,7 +74,7 @@ export interface TripDay {
   id: string;
   dayNumber: number;
   items: DayItem[];
-  diningRecommendations?: DayItem[]; // Yeni alan: Yemek önerileri (Numarasız)
+  diningRecommendations?: DayItem[]; 
   summary?: string;
 }
 
@@ -100,8 +98,17 @@ export interface CreateTripRequest {
   days: number;
   transport: TransportType;
   pace: PaceType;
+  customStopCount?: number; // Kullanıcı özel sayı girerse buraya gelecek
   budget: BudgetType;
   interests: string[];
   startLocation: string;
   customInterests: string;
+}
+
+export interface Feedback {
+    id: string;
+    name: string;
+    subject: string;
+    message: string;
+    date: string;
 }
