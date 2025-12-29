@@ -2,15 +2,18 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <!-- Mobil Native App Hissi İçin Viewport Ayarları: Zoom engellendi -->
+    <!-- Mobil Native App Hissi İçin Viewport Ayarları -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
     <!-- PWA & Mobile Meta Tags -->
     <meta name="theme-color" content="#059669" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TripMind" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
     <link rel="manifest" href="/manifest.json" />
-    <!-- REVİZE 3: Favicon SVG olarak güncellendi -->
+    <!-- Favicon SVG olarak güncellendi -->
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
     
@@ -24,7 +27,7 @@
 
     <script>
       tailwind.config = {
-        darkMode: 'class', // Kullanıcı seçimine göre dark mode
+        darkMode: 'class', 
         theme: {
           extend: {
             fontFamily: {
@@ -76,7 +79,6 @@
         overscroll-behavior-y: none; /* Lastik efektini engeller */
         -webkit-tap-highlight-color: transparent; /* Mobilde tıklama grisini kaldırır */
         height: 100%;
-        /* Background rengi JS ile kontrol edilecek ama varsayılan verelim */
     }
 
     /* Dark Mode'da body rengi */

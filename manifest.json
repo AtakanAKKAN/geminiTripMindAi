@@ -3,6 +3,9 @@
   "name": "TripMind AI: Gezi Planlayıcı",
   "description": "Yapay zeka destekli Türkiye şehir gezi rehberi. Şehrini seç, kişisel gezi rotanı saniyeler içinde oluştur.",
   "id": "/",
+  "scope": "/",
+  "lang": "tr-TR",
+  "dir": "ltr",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#059669",
@@ -13,12 +16,14 @@
     {
       "src": "icon.svg",
       "type": "image/svg+xml",
-      "sizes": "192x192 purpose any maskable"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "icon.svg",
       "type": "image/svg+xml",
-      "sizes": "512x512 purpose any maskable"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [

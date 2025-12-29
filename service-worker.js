@@ -1,5 +1,5 @@
-const CACHE_NAME = 'tripmind-cache-v1';
-const DYNAMIC_CACHE = 'tripmind-dynamic-v1';
+const CACHE_NAME = 'tripmind-cache-v2';
+const DYNAMIC_CACHE = 'tripmind-dynamic-v2';
 
 // Önbelleğe alınacak statik dosyalar
 const ASSETS_TO_CACHE = [
@@ -35,42 +35,45 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// Fetch: İnternet varsa internetten çek, yoksa cache'den ver
+// Fetch Stratejisi
 self.addEventListener('fetch', (event) => {
-  // API isteklerini cacheleme (Her zaman taze veri lazım)
+  // 1. API İstekleri: Asla cacheleme (Network Only)
   if (event.request.url.includes('generativelanguage.googleapis.com')) {
     return;
   }
 
+  // 2. Navigasyon İstekleri (HTML): Network First, Fallback to Cache
+  // İnternet varsa sayfayı yükle, yoksa cache'deki index.html'i (offline sayfası) getir.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          return caches.open(CACHE_NAME)
+            .then((cache) => {
+              return cache.match('/index.html');
+            });
+        })
+    );
+    return;
+  }
+
+  // 3. Statik Dosyalar (JS, CSS, Images): Stale-While-Revalidate
+  // Cache'den ver, arka planda yenisini indirip güncelle.
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Cache'de varsa döndür
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+        }
+        return networkResponse;
+      }).catch(() => {
+          // Fetch hatası (internet yok) durumunda yutulur, cache varsa o döner.
+      });
 
-      // Cache'de yoksa network'ten çek
-      return fetch(event.request)
-        .then((networkResponse) => {
-          // Geçerli bir yanıt değilse olduğu gibi döndür
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
-          }
-
-          // Yanıtı klonla ve dinamik cache'e at (Resimler, JS dosyaları vb. için)
-          const responseToCache = networkResponse.clone();
-          caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-
-          return networkResponse;
-        })
-        .catch(() => {
-          // İnternet yoksa ve HTML isteniyorsa offline sayfasını (veya ana sayfayı) döndür
-          if (event.request.headers.get('accept').includes('text/html')) {
-            return caches.match('/');
-          }
-        });
+      return cachedResponse || fetchPromise;
     })
   );
 });
