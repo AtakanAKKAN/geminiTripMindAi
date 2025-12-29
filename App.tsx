@@ -15,9 +15,24 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStepText, setLoadingStepText] = useState("İşlem Başlatılıyor...");
   const [swappingItemId, setSwappingItemId] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Offline/Online Listener
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Tema Yönetimi
   useEffect(() => {
@@ -58,6 +73,11 @@ const App: React.FC = () => {
   };
 
   const handleCreateTrip = async (request: CreateTripRequest) => {
+    if (isOffline) {
+      alert("İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.");
+      return;
+    }
+
     setIsLoading(true);
     setLoadingStepText("Şehir verileri inceleniyor...");
 
@@ -103,6 +123,11 @@ const App: React.FC = () => {
   }
 
   const handleSwapPlace = async (dayId: string, itemId: string) => {
+     if (isOffline) {
+        alert("Mekan değiştirmek için internet bağlantısı gereklidir.");
+        return;
+     }
+
      if (!currentTrip) return;
 
      const dayIndex = currentTrip.tripDays.findIndex(d => d.id === dayId);
@@ -173,7 +198,16 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col font-sans selection:bg-emerald-200 dark:selection:bg-emerald-800 transition-colors duration-300">
       
-      <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
+      {/* Navigasyon: Safe Area Support (iPhone Notch) için pt-[env...] eklendi */}
+      <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300 pt-[env(safe-area-inset-top)]">
+        
+        {/* Offline Banner */}
+        {isOffline && (
+          <div className="bg-red-500 text-white text-xs font-bold text-center py-1 absolute w-full top-full left-0 z-40">
+            İnternet bağlantısı yok. Bazı özellikler kullanılamayabilir.
+          </div>
+        )}
+
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('HOME')}>
              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-200 dark:shadow-none">T</div>
@@ -231,6 +265,7 @@ const App: React.FC = () => {
                 onSubmit={handleCreateTrip} 
                 isLoading={isLoading} 
                 loadingText={loadingStepText}
+                isOffline={isOffline}
            />
         </div>
 

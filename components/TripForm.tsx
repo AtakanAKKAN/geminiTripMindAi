@@ -6,6 +6,7 @@ interface TripFormProps {
   onSubmit: (data: CreateTripRequest) => void;
   isLoading: boolean;
   loadingText?: string; 
+  isOffline?: boolean; // Yeni Prop
 }
 
 const POPULAR_CITIES = [
@@ -74,7 +75,7 @@ const paceOptions = [
   // CUSTOM removed
 ];
 
-export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loadingText }) => {
+export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loadingText, isOffline = false }) => {
   const [formData, setFormData] = useState<CreateTripRequest>({
     city: '',
     days: 2,
@@ -130,7 +131,7 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isFormValid) onSubmit(formData);
+    if (isFormValid && !isOffline) onSubmit(formData);
   };
 
   return (
@@ -275,8 +276,13 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                {formData.interests.length === 0 && <p className="text-xs text-red-500 mt-2">* En az bir ilgi alanı seçmelisiniz.</p>}
             </div>
 
-            <Button type="submit" fullWidth disabled={isLoading || !isFormValid} className="h-14 text-lg">
-              {isLoading ? 'Planlanıyor...' : 'Rotayı Oluştur'}
+            <Button 
+              type="submit" 
+              fullWidth 
+              disabled={isLoading || !isFormValid || isOffline} 
+              className={`h-14 text-lg ${isOffline ? 'bg-gray-400 cursor-not-allowed hover:bg-gray-400 dark:bg-gray-600' : ''}`}
+            >
+              {isOffline ? 'İnternet Bağlantısı Yok' : (isLoading ? 'Planlanıyor...' : 'Rotayı Oluştur')}
             </Button>
           </form>
       )}
