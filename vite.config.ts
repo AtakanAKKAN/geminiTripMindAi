@@ -7,21 +7,21 @@ export default defineConfig(({ mode }) => {
   // Fix TS error: Property 'cwd' does not exist on type 'Process'
   const env = loadEnv(mode, (process as any).cwd(), '');
   
-  // 2. process.env (Vercel Build Environment) veya env dosyası değerini al
-  const apiKey = process.env.API_KEY || env.API_KEY;
+  // 2. API Anahtarını al.
+  // Öncelik sırası: process.env (Vercel) -> env.API_KEY -> env.GEMINI_API_KEY (Kullanıcının dosyası)
+  const apiKey = process.env.API_KEY || env.API_KEY || process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   
-  // REVİZE: Hardcoded fallback değerler kaldırıldı.
-  // Kullanıcı adı ve şifre sadece ENV dosyasından veya sistem değişkenlerinden okunacak.
+  // 3. Admin bilgileri
   const adminUser = process.env.ADMIN_USERNAME || env.ADMIN_USERNAME;
   const adminPass = process.env.ADMIN_PASSWORD || env.ADMIN_PASSWORD;
 
   return {
     plugins: [react()],
     define: {
-      // Kodun içindeki 'process.env.API_KEY' metnini, gerçek anahtar değeriyle (string olarak) değiştirir.
+      // Kodun içinde 'process.env.API_KEY' yazan her yer, senin GEMINI_API_KEY değerinle değiştirilecek.
       'process.env.API_KEY': apiKey ? JSON.stringify(apiKey) : undefined,
       
-      // Admin bilgileri env üzerinden okunacak, tanımlı değilse undefined kalır
+      // Admin bilgileri
       'process.env.ADMIN_USERNAME': adminUser ? JSON.stringify(adminUser) : undefined,
       'process.env.ADMIN_PASSWORD': adminPass ? JSON.stringify(adminPass) : undefined
     }

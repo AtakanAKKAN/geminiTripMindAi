@@ -81,7 +81,7 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
       throw new Error("Sistem bağlantı anahtarı eksik. Lütfen Vercel panelinden 'Redeploy' işlemini yapın.");
   }
 
-  const { city, days, transport, pace, budget, interests, customStopCount } = request;
+  const { city, days, transport, pace, budget, interests, startLocation } = request;
 
   const hasFoodInterest = interests.some(i => i.toLowerCase().includes('yemek') || i.toLowerCase().includes('mutfak') || i.toLowerCase().includes('gastronomi'));
 
@@ -91,14 +91,31 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
 
   // Durak sayısı mantığı
   let stopInstruction = "";
-  if (pace === PaceType.CUSTOM && customStopCount) {
-      stopInstruction = `HER GÜN İÇİN KESİNLİKLE TAM OLARAK ${customStopCount} adet gezi durağı (items) oluştur. Ne eksik ne fazla.`;
-  } else if (pace === PaceType.RELAXED) {
+  if (pace === PaceType.RELAXED) {
       stopInstruction = "Her gün için yaklaşık 2-3 adet rahat gezilecek durak oluştur.";
   } else if (pace === PaceType.MODERATE) {
       stopInstruction = "Her gün için yaklaşık 4-5 adet durak oluştur.";
   } else if (pace === PaceType.INTENSE) {
       stopInstruction = "Her gün için yaklaşık 6-8 adet yoğun tempolu durak oluştur.";
+  }
+
+  // REVİZE: Başlangıç Noktası Lojistiği
+  const isTransitHub = /Havalimanı|Otogar|Gar|Terminal|İstasyon/i.test(startLocation);
+  let logisticsPrompt = "";
+  
+  if (isTransitHub) {
+      logisticsPrompt = `
+      ÖZEL İSTEK (LOJİSTİK):
+      Kullanıcı "${startLocation}" noktasından şehre giriş yapıyor.
+      Lütfen JSON çıktısındaki "arrivalLogistics" alanını doldur.
+      Bu alanda: "${startLocation} noktasından şehir merkezine veya ilk durağa nasıl gidileceğini" anlat.
+      
+      - Ulaşım tipi ${transport} olduğu için buna uygun öneri ver.
+      - Önemli yerleri, hat numaralarını veya firma isimlerini **iki yıldız** arasına alarak vurgula (Örn: **Havaist-12**, **M1 Metro**, **Avis**).
+      - Eğer Araç seçildiyse kiralama şirketlerini, Toplu Taşıma seçildiyse metro/otobüs hatlarını yaz.
+      `;
+  } else {
+      logisticsPrompt = `Başlangıç noktası: ${startLocation}. İlk durağı buna yakın seçmeye çalış. arrivalLogistics alanını boş bırakabilirsin.`;
   }
 
   const prompt = `
@@ -110,6 +127,8 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
     - Bütçe: ${budget}.
     - DURAK SAYISI KURALI: ${stopInstruction}
     
+    ${logisticsPrompt}
+
     1. GEZİ ROTA YAPISI (ITEMS): Sadece turistik/tarihi/kültürel yerler. ${stopInstruction}
     2. YEMEK (DINING): Her gün için 3 öğün önerisi (Sabah, Öğle, Akşam). ${foodInstruction}
     3. KONAKLAMA: 4 otel önerisi.
@@ -122,6 +141,7 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
       type: Type.OBJECT,
       properties: {
           cityTransport: cityTransportSchema,
+          arrivalLogistics: { type: Type.STRING, nullable: true, description: "Eğer başlangıç noktası havalimanı/otogar ise ulaşım rehberi, yoksa null." },
           hotelRecommendations: { type: Type.ARRAY, items: placeSchema },
           tripDays: { 
             type: Type.ARRAY, 
@@ -159,6 +179,7 @@ export const createTripWithGemini = async (request: CreateTripRequest): Promise<
     return { 
       id: Date.now().toString(), 
       ...request, 
+      arrivalLogistics: data.arrivalLogistics,
       cityTransport: data.cityTransport,
       hotelRecommendations: data.hotelRecommendations || [], 
       tripDays: data.tripDays || []

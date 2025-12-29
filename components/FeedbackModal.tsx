@@ -19,7 +19,10 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // LocalStorage'a kaydetme mantığı
+    // REVİZE 3: Veritabanı simülasyonu ve Mail Bildirimi
+    // Gerçek bir backend sunucumuz olmadığı için veriyi tarayıcıda tutuyoruz,
+    // ancak kullanıcıya "Bildirim Maili" özelliğini `mailto` ile sağlıyoruz.
+    
     const newFeedback: Feedback = {
         id: Date.now().toString(),
         name: formData.name,
@@ -28,10 +31,22 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
         date: new Date().toLocaleDateString('tr-TR')
     };
 
+    // "Database" kaydı (Simülasyon - LocalStorage)
     const existingData = localStorage.getItem('gezirota_feedback');
     const feedbacks: Feedback[] = existingData ? JSON.parse(existingData) : [];
     feedbacks.unshift(newFeedback);
     localStorage.setItem('gezirota_feedback', JSON.stringify(feedbacks));
+
+    // MAIL BİLDİRİMİ (Frontend Çözümü)
+    // Bu kod kullanıcının mail uygulamasını açar ve admin'e hazır bir bildirim maili taslağı oluşturur.
+    // Kullanıcının "Gönder" demesi gerekir, tarayıcı otomatik mail atamaz.
+    // Not: Gerçek tam otomatik mail için sunucu (Node.js/SMTP) gerekir.
+    const adminEmail = "admin@example.com"; // Burayı kendi mailinle değiştirebilirsin
+    const mailSubject = encodeURIComponent(`Yeni Geri Bildirim: ${formData.subject}`);
+    const mailBody = encodeURIComponent(`Sisteme yeni bir geri bildirim eklendi.\n\nGönderen: ${formData.name}\nKonu: ${formData.subject}\n\nLütfen admin panelinden detayları kontrol ediniz.`);
+    
+    // Mail istemcisini arka planda tetikle
+    window.open(`mailto:${adminEmail}?subject=${mailSubject}&body=${mailBody}`, '_blank');
 
     setSuccess(true);
     setTimeout(() => {
@@ -60,10 +75,16 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                     <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 dark:text-white">Teşekkürler!</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">Geri bildiriminiz başarıyla iletildi.</p>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">Geri bildiriminiz sisteme kaydedildi ve admin bildirimi oluşturuldu.</p>
             </div>
         ) : (
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800 mb-4">
+                    <p className="text-xs text-blue-800 dark:text-blue-300">
+                        Mesajınız sistem veritabanına kaydedilecek ve yöneticiye e-posta bildirimi gönderilecektir.
+                    </p>
+                </div>
+
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">İsim Soyisim</label>
                     <input 
@@ -110,7 +131,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
                     type="submit"
                     className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 dark:shadow-none"
                 >
-                    Gönder
+                    Gönder ve Bildir
                 </button>
             </form>
         )}

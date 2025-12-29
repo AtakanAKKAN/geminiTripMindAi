@@ -9,7 +9,6 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  // REVİZE 2: Şifre göster/gizle state'i
   const [showPassword, setShowPassword] = useState(false);
   
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -22,14 +21,20 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
   }, [isAuthenticated]);
 
   const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); 
     
-    // Güvenlik Revizesi: Bilgiler artık kod içinde değil, Environment Variable'da tutuluyor.
+    // Güvenlik Revizesi: Bilgiler Environment Variable'dan çekiliyor.
     const envUser = process.env.ADMIN_USERNAME;
     const envPass = process.env.ADMIN_PASSWORD;
 
-    // Env değişkenleri tanımlıysa ve eşleşiyorsa giriş yap
-    if (envUser && envPass && username === envUser && password === envPass) {
+    // KONTROL: Eğer .env dosyası oluşturulmamışsa veya değerler boşsa uyarı ver.
+    if (!envUser || !envPass) {
+        alert("SİSTEM HATASI:\n\nAdmin giriş bilgileri bulunamadı!\nLütfen ana dizinde '.env' dosyası oluşturup ADMIN_USERNAME ve ADMIN_PASSWORD bilgilerini tanımlayın.");
+        return;
+    }
+
+    // Bilgiler eşleşiyor mu?
+    if (username === envUser && password === envPass) {
         setIsAuthenticated(true);
     } else {
         alert('Hatalı kullanıcı adı veya şifre');
@@ -66,7 +71,6 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
                                 onChange={e => setPassword(e.target.value)} 
                                 className="w-full border dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white p-2 rounded-lg mt-1 outline-none focus:ring-2 focus:ring-emerald-500 pr-10" 
                             />
-                            {/* REVİZE 2: Göz İkonu */}
                             <button 
                                 type="button" 
                                 onClick={() => setShowPassword(!showPassword)}

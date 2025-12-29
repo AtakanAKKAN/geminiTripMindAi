@@ -4,8 +4,7 @@ import { TripForm } from './components/TripForm';
 import { ItineraryView } from './components/ItineraryView';
 import { SavedTripsView } from './components/SavedTripsView';
 import { AboutView } from './components/AboutView';
-import { FeedbackModal } from './components/FeedbackModal';
-import { AdminView } from './components/AdminView'; // Yeni import
+import { AdminView } from './components/AdminView'; 
 import { createTripWithGemini, swapPlaceWithGemini } from './services/geminiService';
 
 type ViewState = 'HOME' | 'ITINERARY' | 'SAVED' | 'ABOUT' | 'ADMIN';
@@ -19,9 +18,6 @@ const App: React.FC = () => {
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Feedback Modal State
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   // Tema Yönetimi
   useEffect(() => {
@@ -176,8 +172,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col font-sans selection:bg-emerald-200 dark:selection:bg-emerald-800 transition-colors duration-300">
-      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
-
+      
       <nav className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('HOME')}>
@@ -202,15 +197,7 @@ const App: React.FC = () => {
                <button onClick={() => setView('ABOUT')} className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hidden sm:block transition-colors">
                    Hakkımızda
                </button>
-               <button 
-                  onClick={() => setIsFeedbackOpen(true)}
-                  className="text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                  aria-label="Geri Bildirim"
-                  title="Geri Bildirim Gönder"
-               >
-                   <svg className="w-6 h-6 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                   <span className="hidden sm:inline text-sm font-medium">Geri Bildirim</span>
-               </button>
+               
                <button onClick={() => setView('SAVED')} className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 px-4 py-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors whitespace-nowrap">
                    Gezilerim
                </button>

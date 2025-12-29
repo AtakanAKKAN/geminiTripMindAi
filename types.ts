@@ -7,8 +7,8 @@ export enum TransportType {
 export enum PaceType {
   RELAXED = 'RELAXED',
   MODERATE = 'MODERATE',
-  INTENSE = 'INTENSE',
-  CUSTOM = 'CUSTOM' // Yeni seçenek
+  INTENSE = 'INTENSE'
+  // CUSTOM seçeneği kaldırıldı
 }
 
 export enum BudgetType {
@@ -87,7 +87,7 @@ export interface Trip {
   budget: BudgetType;
   interests: string[];
   startLocation?: string;
-  customInterests?: string;
+  arrivalLogistics?: string; // Yeni alan eklendi
   hotelRecommendations: Place[];
   cityTransport?: CityTransportInfo; 
   tripDays: TripDay[];
@@ -98,7 +98,6 @@ export interface CreateTripRequest {
   days: number;
   transport: TransportType;
   pace: PaceType;
-  customStopCount?: number; // Kullanıcı özel sayı girerse buraya gelecek
   budget: BudgetType;
   interests: string[];
   startLocation: string;

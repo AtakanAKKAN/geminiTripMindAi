@@ -17,6 +17,8 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onReset, onS
   const [showHotels, setShowHotels] = useState(false);
   const [showTransport, setShowTransport] = useState(false);
   const [showDining, setShowDining] = useState(false);
+  // Yeni State: Lojistik (Varsayılan olarak açık gelsin ki kullanıcı görsün)
+  const [showLogistics, setShowLogistics] = useState(true);
 
   const currentDay: TripDay | undefined = trip.tripDays.find(d => d.dayNumber === activeDay);
 
@@ -34,7 +36,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onReset, onS
   const getPaceLabel = (p: PaceType) => {
       if (p === PaceType.RELAXED) return 'Sakin Tempo';
       if (p === PaceType.INTENSE) return 'Yoğun Tempo';
-      if (p === PaceType.CUSTOM) return 'Özel Tempo';
       return 'Orta Tempo';
   };
 
@@ -42,6 +43,17 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onReset, onS
      const hotelName = trip.hotelRecommendations[0]?.name || 'Belirtilmemiş';
      const text = `TripMind AI ile ${trip.city} için ${trip.days} günlük harika bir gezi planı oluşturdum! 🎒\n\n🏨 Önerilen Otel: ${hotelName}\n🚀 Tempo: ${getPaceLabel(trip.pace)}\n🚗 Ulaşım: ${getTransportLabel(trip.transport)}\n\nKeşfetmeye hazırım!`;
      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  // Helper function to render bold text from **text** format
+  const renderBoldText = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={index} className="font-black text-emerald-700 dark:text-emerald-300 mx-0.5 border-b-2 border-emerald-200 dark:border-emerald-800">{part.slice(2, -2)}</strong>;
+      }
+      return <span key={index}>{part}</span>;
+    });
   };
 
   if (!currentDay) return null;
@@ -103,6 +115,43 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onReset, onS
                  {currentDay.summary || `${trip.city} gezisinin ${currentDay.dayNumber}. günü için harika bir plan.`}
              </p>
           </div>
+          
+          {/* LOJİSTİK BİLGİSİ - YENİ ÖZELLİK */}
+          {trip.arrivalLogistics && (
+             <div className="bg-blue-50/60 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100 dark:border-blue-900 space-y-3">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span className="bg-blue-100 dark:bg-blue-900 p-1.5 rounded-lg text-blue-700 dark:text-blue-300 shadow-sm animate-pulse">
+                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </span>
+                        Başlangıç & Transfer Rehberi
+                    </h3>
+                    <button 
+                        onClick={() => setShowLogistics(!showLogistics)} 
+                        className="text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 border border-blue-200 dark:border-blue-700 px-3 py-1.5 rounded-lg transition-all shadow-sm"
+                    >
+                        {showLogistics ? 'GİZLE' : 'GÖSTER'}
+                    </button>
+                </div>
+                
+                {showLogistics && (
+                    <div className="space-y-3 animate-in slide-in-from-top-4 duration-300">
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-blue-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                            <div className="absolute left-0 top-0 w-1 h-full bg-blue-500"></div>
+                            <div className="flex items-start gap-3">
+                                <div className="mt-1 min-w-[24px]">
+                                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                </div>
+                                <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                                    <span className="block text-xs font-bold text-blue-500 dark:text-blue-400 uppercase mb-1">ROTA BAŞLANGICI: {trip.startLocation}</span>
+                                    {renderBoldText(trip.arrivalLogistics)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+             </div>
+          )}
 
           {trip.hotelRecommendations && trip.hotelRecommendations.length > 0 && (
             <div className="bg-indigo-50/40 dark:bg-indigo-900/10 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900 space-y-3">

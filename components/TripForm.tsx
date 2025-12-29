@@ -70,8 +70,8 @@ const transportOptions = [
 const paceOptions = [
   { value: PaceType.RELAXED, label: 'Sakin (2-3 Durak/Gün)' },
   { value: PaceType.MODERATE, label: 'Orta (4-5 Durak/Gün)' },
-  { value: PaceType.INTENSE, label: 'Yoğun (6-8 Durak/Gün)' },
-  { value: PaceType.CUSTOM, label: 'Özel Belirle' }
+  { value: PaceType.INTENSE, label: 'Yoğun (6-8 Durak/Gün)' }
+  // CUSTOM removed
 ];
 
 export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loadingText }) => {
@@ -83,8 +83,7 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
     budget: BudgetType.MEDIUM,
     interests: [],
     startLocation: '',
-    customInterests: '',
-    customStopCount: 4
+    customInterests: ''
   });
 
   const baseInterestOptions = ['Tarih', 'Yemek', 'Müze', 'Doğa', 'Alışveriş', 'Sanat', 'Fotoğrafçılık'];
@@ -92,7 +91,12 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
   const allInterestOptions = [...baseInterestOptions, ...extraInterests];
 
   const availableStartLocations = formData.city ? (CITY_SPECIFIC_LOCATIONS[formData.city] || [`${formData.city} Merkez`]) : [];
-  const isFormValid = formData.city !== '' && formData.startLocation !== '';
+  
+  // REVİZE 1: Tüm alanlar dolu olmalı ve ilgi alanı seçilmeli
+  const isFormValid = 
+      formData.city !== '' && 
+      formData.startLocation !== '' && 
+      formData.interests.length > 0;
 
   const toggleInterest = (interest: string) => {
     setFormData(prev => ({
@@ -110,7 +114,7 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
     setFormData({
       ...formData,
       city: newCity,
-      startLocation: cityLocations[0],
+      startLocation: cityLocations[0], // Varsayılan olarak ilk lokasyonu seç
       interests: formData.interests.filter(i => baseInterestOptions.includes(i))
     });
   };
@@ -118,16 +122,11 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
   const handleDayChange = (delta: number) => {
       setFormData(prev => {
           const newValue = prev.days + delta;
-          if (newValue < 1 || newValue > 10) return prev;
+          // REVİZE 1: Gün sayısı en fazla 6 olabilir
+          if (newValue < 1 || newValue > 6) return prev;
           return { ...prev, days: newValue };
       });
   };
-
-  const handleCustomStopChange = (val: number) => {
-      if(val < 1) val = 1;
-      if(val > 15) val = 15;
-      setFormData({...formData, customStopCount: val});
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,7 +159,7 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
 
             {/* City Select */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gidilecek Şehir</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gidilecek Şehir <span className="text-red-500">*</span></label>
               <div className="relative">
                 <select
                     required
@@ -179,9 +178,33 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
               </div>
             </div>
 
+            {/* Start Location Select */}
+            <div>
+               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Başlangıç Noktası <span className="text-red-500">*</span></label>
+               <div className="relative">
+                 <select
+                     required
+                     disabled={!formData.city}
+                     className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl outline-none font-medium appearance-none cursor-pointer text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                     value={formData.startLocation}
+                     onChange={(e) => setFormData({...formData, startLocation: e.target.value})}
+                 >
+                     <option value="" disabled>
+                        {formData.city ? 'Başlangıç Noktası Seçiniz' : 'Önce Şehir Seçiniz'}
+                     </option>
+                     {availableStartLocations.map(loc => (
+                       <option key={loc} value={loc}>{loc}</option>
+                     ))}
+                 </select>
+                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+               </div>
+            </div>
+
             {/* Days Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gün Sayısı</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gün Sayısı (Max 6)</label>
               <div className="flex items-center justify-between bg-gray-50 dark:bg-slate-700 p-1.5 rounded-xl border border-gray-200 dark:border-slate-600">
                  <button type="button" onClick={() => handleDayChange(-1)} className="w-12 h-12 flex items-center justify-center rounded-lg bg-white dark:bg-slate-600 border border-gray-100 dark:border-slate-500 text-gray-600 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-slate-500">-</button>
                  <span className="font-medium text-gray-900 dark:text-white text-lg">{formData.days} Gün</span>
@@ -208,7 +231,7 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                   </div>
                 </div>
 
-                {/* Pace Selection (Updated Logic) */}
+                {/* Pace Selection (Updated) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Gezi Temposu</label>
                   <div className="flex flex-col gap-2">
@@ -223,18 +246,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                         {formData.pace === opt.value && <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>}
                       </button>
                     ))}
-                    
-                    {/* Custom Stop Count Input */}
-                    {formData.pace === PaceType.CUSTOM && (
-                        <div className="mt-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800 animate-in slide-in-from-top-2">
-                            <label className="block text-xs font-bold text-purple-800 dark:text-purple-300 mb-1">Günlük Durak Sayısı:</label>
-                            <div className="flex items-center gap-2">
-                                <button type="button" onClick={() => handleCustomStopChange((formData.customStopCount || 4) - 1)} className="w-8 h-8 bg-white dark:bg-slate-600 rounded-lg border border-purple-200 dark:border-slate-500 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-100 dark:hover:bg-slate-500">-</button>
-                                <span className="flex-1 text-center font-bold text-gray-800 dark:text-white bg-white dark:bg-slate-600 py-1.5 rounded-lg border border-purple-200 dark:border-slate-500">{formData.customStopCount}</span>
-                                <button type="button" onClick={() => handleCustomStopChange((formData.customStopCount || 4) + 1)} className="w-8 h-8 bg-white dark:bg-slate-600 rounded-lg border border-purple-200 dark:border-slate-500 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-100 dark:hover:bg-slate-500">+</button>
-                            </div>
-                        </div>
-                    )}
                   </div>
                 </div>
             </div>
@@ -253,35 +264,15 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                 </div>
             </div>
 
-            {/* Start Location Select */}
-            <div>
-               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Başlangıç Noktası</label>
-               <div className="relative">
-                 <select
-                     required
-                     disabled={!formData.city}
-                     className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl outline-none font-medium appearance-none cursor-pointer text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                     value={formData.startLocation}
-                     onChange={(e) => setFormData({...formData, startLocation: e.target.value})}
-                 >
-                     <option value="" disabled>
-                        {formData.city ? 'Başlangıç Noktası Seçiniz' : 'Önce Şehir Seçiniz'}
-                     </option>
-                     {availableStartLocations.map(loc => (
-                       <option key={loc} value={loc}>{loc}</option>
-                     ))}
-                 </select>
-               </div>
-            </div>
-
             {/* Interests */}
             <div>
-               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">İlgi Alanları</label>
+               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">İlgi Alanları <span className="text-red-500">*</span></label>
                <div className="flex flex-wrap gap-2">
                  {allInterestOptions.map(interest => (
                    <button key={interest} type="button" onClick={() => toggleInterest(interest)} className={`px-4 py-2 rounded-full text-xs font-medium border transition-all ${formData.interests.includes(interest) ? 'bg-emerald-100 dark:bg-emerald-900 border-emerald-500 text-emerald-800 dark:text-emerald-200 shadow-sm' : 'bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:border-gray-400 dark:hover:border-slate-500'}`}>{interest}</button>
                  ))}
                </div>
+               {formData.interests.length === 0 && <p className="text-xs text-red-500 mt-2">* En az bir ilgi alanı seçmelisiniz.</p>}
             </div>
 
             <Button type="submit" fullWidth disabled={isLoading || !isFormValid} className="h-14 text-lg">
