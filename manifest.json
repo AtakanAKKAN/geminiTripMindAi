@@ -14,13 +14,13 @@
   "categories": ["travel", "lifestyle", "productivity"],
   "icons": [
     {
-      "src": "public/icon-192.png",
+      "src": "/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "public/icon-512.png",
+      "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
@@ -32,19 +32,19 @@
       "short_name": "Planla",
       "description": "Yeni bir gezi planı oluştur",
       "url": "/",
-      "icons": [{ "src": "public/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "screenshots": [
     {
-      "src": "public/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
       "label": "TripMind AI Ana Ekran"
     },
     {
-      "src": "public/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "form_factor": "narrow",

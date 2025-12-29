@@ -12,13 +12,13 @@
     <meta name="apple-mobile-web-app-title" content="TripMind" />
     <meta name="mobile-web-app-capable" content="yes" />
     
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="manifest.json" />
     
-    <!-- İkon Yapılandırması (public/ klasöründen) -->
-    <link rel="icon" type="image/x-icon" href="public/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="16x16" href="public/favicon_16.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="public/favicon_32.png" />
-    <link rel="apple-touch-icon" href="public/favicon_64.png" />
+    <!-- İkon Yapılandırması (Göreceli yollar kullanarak Vite'ın doğru çözümlemesi sağlandı) -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_32.png" />
+    <link rel="apple-touch-icon" href="favicon_64.png" />
     
     <title>TripMind AI - Akıllı Gezi Planlayıcısı</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -180,8 +180,8 @@
     <div id="root">
         <!-- React Yüklenene Kadar Görülecek Splash Screen -->
         <div id="splash-screen">
-            <!-- Artık public/icon-192.png dosyasını kullanıyoruz -->
-            <img src="public/icon-192.png" alt="TripMind Logo" class="splash-logo" />
+            <!-- Göreceli yol kullanımı (önündeki slash kaldırıldı) -->
+            <img src="icon-192.png" alt="TripMind Logo" class="splash-logo" />
             <div class="splash-loader"></div>
         </div>
     </div>

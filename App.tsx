@@ -20,6 +20,23 @@ const App: React.FC = () => {
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // VITE ASSET IMPORT LOGIC:
+  // Public klasöründeki dosyalar build sırasında root'a kopyalanır.
+  // BASE_URL, projenin çalıştığı kök dizini (örn: / veya /app/) dinamik olarak alır.
+  // Bu yöntem 'import' mantığıyla çalışır ve kırık link oluşmasını engeller.
+  // Fix: Safely access BASE_URL or default to '/' to prevent runtime errors if env is undefined
+  const getLogoPath = () => {
+    try {
+      const meta = import.meta as any;
+      const baseUrl = (meta && meta.env && meta.env.BASE_URL) ? meta.env.BASE_URL : '/';
+      return `${baseUrl}icon-192.png`.replace('//', '/');
+    } catch (e) {
+      return '/icon-192.png';
+    }
+  };
+  
+  const LOGO_PATH = getLogoPath();
+
   // Offline/Online Listener
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -210,7 +227,20 @@ const App: React.FC = () => {
 
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('HOME')}>
-             <img src="public/icon-192.png" alt="TripMind Logo" className="w-10 h-10 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none" />
+             <img 
+                src={LOGO_PATH} 
+                alt="TripMind Logo" 
+                className="w-10 h-10 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none object-cover"
+                onError={(e) => {
+                    // Fallback: Eğer resim yüklenemezse (404), CSS ile oluşturulan "T" logosunu göster.
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement?.classList.add('fallback-logo-active');
+                    const fallback = document.createElement('div');
+                    fallback.className = "w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg";
+                    fallback.innerText = "T";
+                    e.currentTarget.parentElement?.prepend(fallback);
+                }} 
+             />
              <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">TripMind AI</span>
            </div>
            
