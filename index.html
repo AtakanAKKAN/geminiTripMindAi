@@ -14,11 +14,11 @@
     
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- İkon Yapılandırması (PWABuilder Standartları) -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon_16.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon_32.png" />
-    <link rel="apple-touch-icon" href="/favicon_64.png" />
+    <!-- İkon Yapılandırması (public/ klasöründen) -->
+    <link rel="icon" type="image/x-icon" href="public/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="public/favicon_16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="public/favicon_32.png" />
+    <link rel="apple-touch-icon" href="public/favicon_64.png" />
     
     <title>TripMind AI - Akıllı Gezi Planlayıcısı</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -146,7 +146,7 @@
         background-color: #0f172a;
     }
     
-    /* Eski CSS logosu yerine Image stili */
+    /* Image stili */
     .splash-logo {
         width: 96px;
         height: 96px;
@@ -181,7 +181,7 @@
         <!-- React Yüklenene Kadar Görülecek Splash Screen -->
         <div id="splash-screen">
             <!-- Artık public/icon-192.png dosyasını kullanıyoruz -->
-            <img src="/icon-192.png" alt="TripMind Logo" class="splash-logo" />
+            <img src="public/icon-192.png" alt="TripMind Logo" class="splash-logo" />
             <div class="splash-loader"></div>
         </div>
     </div>

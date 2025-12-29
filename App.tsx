@@ -210,7 +210,7 @@ const App: React.FC = () => {
 
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('HOME')}>
-             <img src="/icon-192.png" alt="TripMind Logo" className="w-10 h-10 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none" />
+             <img src="public/icon-192.png" alt="TripMind Logo" className="w-10 h-10 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none" />
              <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">TripMind AI</span>
            </div>
            
