@@ -1,6 +1,6 @@
 {
-  "name": "TripMind AI v1.0.0",
-  "description": "Google Play Store sürümü. Yapay zeka destekli Türkiye şehir gezi planlayıcısı. PWA uyumlu, native uygulama deneyimi.",
+  "name": "TripMind AI v1.1.0",
+  "description": "Google Play Store uyumlu sürüm. Offline mod desteği eklendi.",
   "requestFramePermissions": [
     "geolocation"
   ]

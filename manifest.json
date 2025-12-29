@@ -1,21 +1,49 @@
 {
   "short_name": "TripMind",
   "name": "TripMind AI: Gezi Planlayıcı",
+  "description": "Yapay zeka destekli Türkiye şehir gezi rehberi. Şehrini seç, kişisel gezi rotanı saniyeler içinde oluştur.",
+  "id": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#059669",
+  "background_color": "#F8FAFC",
+  "orientation": "portrait",
+  "categories": ["travel", "lifestyle", "productivity"],
   "icons": [
     {
       "src": "icon.svg",
       "type": "image/svg+xml",
-      "sizes": "192x192"
+      "sizes": "192x192 purpose any maskable"
     },
     {
       "src": "icon.svg",
       "type": "image/svg+xml",
-      "sizes": "512x512"
+      "sizes": "512x512 purpose any maskable"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#059669",
-  "background_color": "#F8FAFC",
-  "orientation": "portrait"
+  "shortcuts": [
+    {
+      "name": "Yeni Rota",
+      "short_name": "Planla",
+      "description": "Yeni bir gezi planı oluştur",
+      "url": "/",
+      "icons": [{ "src": "icon.svg", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon.svg",
+      "sizes": "1024x500",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "TripMind AI Ana Ekran"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "512x900",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Mobil Görünüm"
+    }
+  ]
 }

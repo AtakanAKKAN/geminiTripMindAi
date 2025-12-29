@@ -7,6 +7,19 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+// Service Worker Kaydı (PWA ve Play Store için Zorunlu)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((registration) => {
+        console.log('ServiceWorker başarıyla kaydedildi: ', registration.scope);
+      })
+      .catch((err) => {
+        console.log('ServiceWorker kaydı başarısız: ', err);
+      });
+  });
+}
+
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
