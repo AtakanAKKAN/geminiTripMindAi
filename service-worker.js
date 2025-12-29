@@ -1,12 +1,18 @@
-const CACHE_NAME = 'tripmind-cache-v2';
-const DYNAMIC_CACHE = 'tripmind-dynamic-v2';
+const CACHE_NAME = 'tripmind-cache-v3';
+const DYNAMIC_CACHE = 'tripmind-dynamic-v3';
 
 // Önbelleğe alınacak statik dosyalar
+// PWABuilder'dan tam puan almak için ikonlar ve manifest kesinlikle burada olmalı.
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon.svg'
+  '/favicon.ico',
+  '/favicon_16.png',
+  '/favicon_32.png',
+  '/favicon_64.png',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // Kurulum: Statik dosyaları önbelleğe al

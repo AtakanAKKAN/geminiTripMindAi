@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Mevcut çalışma dizininden env dosyasını yükle
+  // (process as any) cast işlemi TypeScript hatasını engeller
   const env = loadEnv(mode, (process as any).cwd(), '');
   
   // API Anahtarını belirle
@@ -17,9 +18,11 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       // GÜVENLİK NOTU: 
-      // İstemci taraflı (frontend) uygulamalarda bu anahtarlar derleme (build) sırasında
-      // kodun içine gömülür ve tarayıcıda görünür hale gelir.
-      // API Key'i tamamen gizlemek için bir Backend servisi kullanmanız gerekmektedir.
+      // 'define' işlemi, derleme (build) sırasında koddaki 'process.env.API_KEY' ibaresini
+      // doğrudan API anahtarınızın string değeriyle değiştirir.
+      // Bu, istemci taraflı (frontend-only) bir uygulama için standarttır ancak
+      // kaynak kodunuzu inceleyen (View Source) biri anahtarı görebilir.
+      // Anahtarı tamamen gizlemek için Backend Proxy (Node.js vb.) kullanmanız şarttır.
       'process.env.API_KEY': apiKey ? JSON.stringify(apiKey) : undefined,
       'process.env.ADMIN_USERNAME': adminUser ? JSON.stringify(adminUser) : undefined,
       'process.env.ADMIN_PASSWORD': adminPass ? JSON.stringify(adminPass) : undefined
