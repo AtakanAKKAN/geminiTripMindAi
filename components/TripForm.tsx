@@ -24,7 +24,8 @@ const POPULAR_CITIES = [
   "Gaziantep",
   "Şanlıurfa",
   "Mardin",
-  "Eskişehir"
+  "Eskişehir",
+  "Kırıkkale"
 ];
 
 const CITY_SPECIFIC_LOCATIONS: Record<string, string[]> = {
@@ -38,7 +39,8 @@ const CITY_SPECIFIC_LOCATIONS: Record<string, string[]> = {
   "Gaziantep": ["Gaziantep Kalesi (Merkez)", "Gaziantep Havalimanı (GZT)", "Gaziantep Otogarı"],
   "Trabzon": ["Trabzon Meydan (Şehir Merkezi)", "Trabzon Havalimanı (TZX)", "Trabzon Otogarı"],
   "Bursa": ["Ulu Camii (Şehir Merkezi)", "Bursa Otogarı", "İDO Güzelyalı Feribot İskelesi"],
-  "Eskişehir": ["Adalar Porsuk Çayı (Merkez)", "Eskişehir Tren Garı", "Eskişehir Otogarı"]
+  "Eskişehir": ["Adalar Porsuk Çayı (Merkez)", "Eskişehir Tren Garı", "Eskişehir Otogarı"],
+  "Kırıkkale": ["Kırıkkale Cumhuriyet Meydanı", "Kırıkkale Otogarı", "Ankara Esenboğa Havalimanı (En Yakın)", "MKE Silah Müzesi"]
 };
 
 const CITY_EXTRA_INTERESTS: Record<string, string[]> = {
@@ -52,7 +54,8 @@ const CITY_EXTRA_INTERESTS: Record<string, string[]> = {
   "Trabzon": ["Yaylalar", "Karadeniz Mutfağı", "Manastırlar"],
   "Bursa": ["Osmanlı Tarihi", "İskender Kebap", "Termal Sular"],
   "Şanlıurfa": ["Göbeklitepe", "Peygamberler Tarihi", "Sıra Gecesi"],
-  "Mardin": ["Taş Mimari", "Süryani Kültürü", "Mezopotamya Manzarası"]
+  "Mardin": ["Taş Mimari", "Süryani Kültürü", "Mezopotamya Manzarası"],
+  "Kırıkkale": ["Silah Müzesi", "Tarihi Çeşnigir Köprüsü", "Karaahmetli Kanyonu"]
 };
 
 const budgetOptions = [
