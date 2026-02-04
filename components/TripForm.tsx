@@ -7,7 +7,7 @@ interface TripFormProps {
   isLoading: boolean;
   loadingText?: string; 
   isOffline?: boolean;
-  cooldownSeconds?: number; // Yeni Prop: Kalan bekleme süresi
+  cooldownSeconds?: number;
 }
 
 const POPULAR_CITIES = [
@@ -44,21 +44,6 @@ const CITY_SPECIFIC_LOCATIONS: Record<string, string[]> = {
   "Kırıkkale": ["Kırıkkale Cumhuriyet Meydanı", "Kırıkkale Otogarı", "Ankara Esenboğa Havalimanı (En Yakın)", "MKE Silah Müzesi"]
 };
 
-const CITY_EXTRA_INTERESTS: Record<string, string[]> = {
-  "İstanbul": ["Boğaz Turu", "Bizans Tarihi", "Sokak Lezzetleri"],
-  "Antalya": ["Deniz & Plaj", "Antik Kentler", "Şelaleler"],
-  "İzmir": ["Kordon Boyu", "Ege Mutfağı", "Antik Efes"],
-  "Ankara": ["Cumhuriyet Tarihi", "Müzeler", "Yerel Politika"],
-  "Nevşehir (Kapadokya)": ["Balon Turu", "Yeraltı Şehirleri", "Vadiler"],
-  "Gaziantep": ["Gastronomi & Kebap", "Baklava", "Mozaik Sanatı"],
-  "Muğla (Bodrum)": ["Gece Hayatı", "Mavi Yolculuk", "Lüks Plajlar"],
-  "Trabzon": ["Yaylalar", "Karadeniz Mutfağı", "Manastırlar"],
-  "Bursa": ["Osmanlı Tarihi", "İskender Kebap", "Termal Sular"],
-  "Şanlıurfa": ["Göbeklitepe", "Peygamberler Tarihi", "Sıra Gecesi"],
-  "Mardin": ["Taş Mimari", "Süryani Kültürü", "Mezopotamya Manzarası"],
-  "Kırıkkale": ["Silah Müzesi", "Tarihi Çeşnigir Köprüsü", "Karaahmetli Kanyonu"]
-};
-
 const budgetOptions = [
   { value: BudgetType.LOW, label: 'Ekonomik' },
   { value: BudgetType.MEDIUM, label: 'Orta Seviye' },
@@ -90,9 +75,18 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
     customInterests: ''
   });
 
-  const baseInterestOptions = ['Tarih', 'Yemek', 'Müze', 'Doğa', 'Alışveriş', 'Sanat', 'Fotoğrafçılık'];
-  const extraInterests = formData.city ? (CITY_EXTRA_INTERESTS[formData.city] || []) : [];
-  const allInterestOptions = [...baseInterestOptions, ...extraInterests];
+  const baseInterestOptions = [
+    'Tarih', 
+    'Yemek', 
+    'Müze', 
+    'Doğa', 
+    'Alışveriş', 
+    'Sanat', 
+    'Fotoğrafçılık', 
+    'Mimari', 
+    'Eğlence', 
+    'Yerel Deneyimler'
+  ];
 
   const availableStartLocations = formData.city ? (CITY_SPECIFIC_LOCATIONS[formData.city] || [`${formData.city} Merkez`]) : [];
   
@@ -118,7 +112,7 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
       ...formData,
       city: newCity,
       startLocation: cityLocations[0],
-      interests: formData.interests.filter(i => baseInterestOptions.includes(i))
+      interests: formData.interests
     });
   };
 
@@ -135,7 +129,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
     if (isFormValid && !isOffline && cooldownSeconds === 0) onSubmit(formData);
   };
 
-  // Bekleme süresi formatlayıcı
   const formatCooldown = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -166,7 +159,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">Seyahatinizi Planlayın</h2>
             </div>
 
-            {/* City Select */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gidilecek Şehir <span className="text-red-500">*</span></label>
               <div className="relative">
@@ -187,7 +179,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
               </div>
             </div>
 
-            {/* Start Location Select */}
             <div>
                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Başlangıç Noktası <span className="text-red-500">*</span></label>
                <div className="relative">
@@ -211,7 +202,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                </div>
             </div>
 
-            {/* Days Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gün Sayısı (Max 6)</label>
               <div className="flex items-center justify-between bg-gray-50 dark:bg-slate-700 p-1.5 rounded-xl border border-gray-200 dark:border-slate-600">
@@ -221,7 +211,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
               </div>
             </div>
 
-            {/* Transport & Pace Preference */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Ulaşım</label>
@@ -257,7 +246,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                 </div>
             </div>
 
-            {/* Budget Selection */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bütçe</label>
                 <div className="relative">
@@ -271,22 +259,23 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                 </div>
             </div>
 
-            {/* Interests */}
             <div>
                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">İlgi Alanları <span className="text-red-500">*</span></label>
                <div className="flex flex-wrap gap-2">
-                 {allInterestOptions.map(interest => (
+                 {baseInterestOptions.map(interest => (
                    <button key={interest} type="button" onClick={() => toggleInterest(interest)} className={`px-4 py-2 rounded-full text-xs font-medium border transition-all ${formData.interests.includes(interest) ? 'bg-emerald-100 dark:bg-emerald-900 border-emerald-500 text-emerald-800 dark:text-emerald-200 shadow-sm' : 'bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:border-gray-400 dark:hover:border-slate-500'}`}>{interest}</button>
                  ))}
                </div>
-               {formData.interests.length === 0 && <p className="text-xs text-red-500 mt-2">* En az bir ilgi alanı seçmelisiniz.</p>}
+               {formData.interests.length === 0 && (
+                 <p className="text-xs text-red-500 mt-2 font-medium">* En az 1 ilgi alanı seçmelisiniz.</p>
+               )}
             </div>
 
             <Button 
               type="submit" 
               fullWidth 
               disabled={isLoading || !isFormValid || isOffline || cooldownSeconds > 0} 
-              className={`h-14 text-lg ${(isOffline || cooldownSeconds > 0) ? 'bg-gray-400 cursor-not-allowed hover:bg-gray-400 dark:bg-gray-600' : ''}`}
+              className={`h-14 text-lg ${(isOffline || cooldownSeconds > 0 || !isFormValid) ? 'bg-gray-400 cursor-not-allowed hover:bg-gray-400 dark:bg-gray-600 shadow-none' : ''}`}
             >
               {isOffline ? 'İnternet Bağlantısı Yok' : (
                 isLoading ? 'Planlanıyor...' : (
@@ -294,11 +283,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                 )
               )}
             </Button>
-            {cooldownSeconds > 0 && (
-                <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    API limitleri nedeniyle her yeni gezi için 5 dakika beklemeniz gerekmektedir.
-                </p>
-            )}
           </form>
       )}
     </div>

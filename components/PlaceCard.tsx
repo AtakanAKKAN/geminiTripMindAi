@@ -1,6 +1,5 @@
 import React from 'react';
 import { DayItem, TransportType } from '../types';
-import { SafeImage } from './SafeImage';
 
 interface PlaceCardProps {
   item: DayItem;
@@ -48,7 +47,6 @@ const translateTimeSlot = (slot: string) => {
 
 export const PlaceCard: React.FC<PlaceCardProps> = ({ item, index, isFirst, isLast, transportType, onSwap, isSwapping, isDining = false }) => {
   const { place, timeSlot, startTime, durationMinutes } = item;
-  const isCar = transportType === 'CAR';
   const catStyle = isDining ? CATEGORY_STYLES.RESTAURANT : (CATEGORY_STYLES[place.category] || CATEGORY_STYLES.DEFAULT);
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' ' + place.lat + ',' + place.lng)}`;
 
@@ -72,23 +70,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ item, index, isFirst, isLa
         rounded-2xl md:rounded-3xl border-2 transition-all shadow-sm hover:shadow-lg backdrop-blur-sm overflow-hidden
         ${isDining ? 'bg-orange-50/60 dark:bg-orange-900/10 border-orange-100 dark:border-orange-900/50 hover:border-orange-300 dark:hover:border-orange-700' : 'bg-emerald-50/60 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700'}
       `}>
-        {/* Mekan Görseli Placeholder Alanı */}
-        <SafeImage 
-          src={undefined} // Gelecekte bir resim URL'i gelirse buraya bağlanabilir
-          alt={place.name}
-          className="w-full h-32 md:h-40 object-cover"
-          fallbackContent={
-            <div className={`w-full h-full flex items-center justify-center opacity-30 ${isDining ? 'bg-orange-100 dark:bg-orange-900' : 'bg-emerald-100 dark:bg-emerald-900'}`}>
-               {isDining ? (
-                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-               ) : (
-                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-               )}
-            </div>
-          }
-        />
-
-        <div className="p-4">
+        <div className="p-4 md:p-6">
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-2">
               <span className="text-xs md:text-sm font-black text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-gray-100 dark:border-slate-700 shadow-sm">{startTime}</span>
@@ -104,12 +86,12 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ item, index, isFirst, isLa
           </div>
 
           <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-lg md:text-xl mb-2 tracking-tight leading-tight">{place.name}</h3>
-          <p className="text-gray-700 dark:text-gray-400 text-xs md:text-sm mb-4 leading-relaxed font-medium line-clamp-2 group-hover:line-clamp-none transition-all">{place.description}</p>
+          <p className="text-gray-700 dark:text-gray-400 text-xs md:text-sm mb-4 leading-relaxed font-medium">{place.description}</p>
           
           <div className="flex flex-wrap gap-2 mb-4">
              <a href={googleMapsUrl} target="_blank" rel="noreferrer" className={`flex items-center gap-1.5 text-[10px] md:text-xs font-bold text-white px-3 py-2 rounded-xl shadow-md transition-all hover:-translate-y-0.5 ${isDining ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200 dark:shadow-none' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 dark:shadow-none'}`}>
                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-               HARİTA
+               HARİTADA GÖR
              </a>
           </div>
 

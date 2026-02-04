@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Trip, CreateTripRequest, Place, DayItem, TripDay, PaceType } from '../types';
+import { Trip, CreateTripRequest, Place, DayItem, TripDay, PaceType, TransportType } from '../types';
 
 let apiCallCount = 0;
 
@@ -19,7 +19,6 @@ const cleanJsonString = (str: string) => {
   return cleaned.trim();
 };
 
-// Ortak Şemalar
 const transportInfoSchema = {
     type: Type.OBJECT,
     properties: {
@@ -40,8 +39,14 @@ const placeSchema = {
         rating: { type: Type.NUMBER },
         reviewCount: { type: Type.INTEGER },
         priceLevel: { type: Type.STRING },
-        lat: { type: Type.NUMBER },
-        lng: { type: Type.NUMBER },
+        lat: { 
+          type: Type.NUMBER, 
+          description: "Mekanın gerçek dünyadaki tam enlemi (Latitude). Hassasiyet: En az 6 ondalık basamak. UYDURMA VERİ YASAKTIR." 
+        },
+        lng: { 
+          type: Type.NUMBER, 
+          description: "Mekanın gerçek dünyadaki tam boylamı (Longitude). Hassasiyet: En az 6 ondalık basamak. UYDURMA VERİ YASAKTIR." 
+        },
         description: { type: Type.STRING },
         website: { type: Type.STRING, nullable: true },
         transportInfo: transportInfoSchema
@@ -68,16 +73,17 @@ const getClient = () => {
     return new GoogleGenAI({ apiKey });
 };
 
-// 1. ADIM: Genel Bilgileri (Otel, Ulaşım, Özetler) Getir
 const fetchMetadata = async (ai: any, request: CreateTripRequest) => {
   logApiCall("fetchMetadata");
   const { city, days, budget, startLocation } = request;
   
-  const prompt = `"${city}" için ${days} günlük gezi taslağı:
-    1. hotelRecommendations: 4 adet otel önerisi (${budget} bütçeye uygun).
+  const prompt = `"${city}" için ${days} günlük gezi taslağı oluştur.
+    KRİTİK TALİMATLAR:
+    1. hotelRecommendations: 4 adet GERÇEK otel önerisi. Koordinatlar (lat, lng) Google Maps verileriyle birebir aynı ve en az 6 hane hassasiyetle olmalı.
     2. cityTransport: cardName, appName ve 1 cümlelik generalAdvice.
     3. arrivalLogistics: "${startLocation}" noktasından merkeze ulaşım özeti.
-    4. summaries: Her bir gün için (${days} gün) motive edici 1 cümlelik özetlerin listesi.
+    4. summaries: Her bir gün için (${days} gün) özetler.
+    UYARI: Koordinat bilgileri uydurulamaz. Eğer bir mekanın tam koordinatından emin değilsen o mekanı önerme, emin olduğun gerçek bir mekanı ekle.
     DİL: TÜRKÇE. JSON formatı.`;
 
   const schema = {
@@ -108,18 +114,25 @@ const fetchMetadata = async (ai: any, request: CreateTripRequest) => {
   return JSON.parse(cleanJsonString(response.text));
 };
 
-// 2. ADIM: Belirli Bir Günün Detaylı Planını Getir
 const fetchDayPlan = async (ai: any, request: CreateTripRequest, dayNumber: number) => {
   logApiCall(`fetchDayPlan (Gün ${dayNumber})`);
   const { city, transport, pace, interests } = request;
 
-  const stopCount = pace === PaceType.RELAXED ? "2-3" : pace === PaceType.MODERATE ? "4-5" : "6-8";
+  const stopCount = pace === PaceType.RELAXED ? 3 : pace === PaceType.MODERATE ? 5 : 8;
   
+  const transportRules = transport === TransportType.WALKING 
+    ? "Mekanlar arası mesafe maksimum 15 dk yürüme mesafesinde olmalı. Koordinatlar birbirine çok yakın kümelenmeli." 
+    : transport === TransportType.PUBLIC_TRANSPORT 
+    ? "Mekanlar toplu taşıma hatlarına yakın seçilmeli." 
+    : "Araç ile ulaşım rotası çizilmeli.";
+
   const prompt = `"${city}" gezisi GÜN ${dayNumber} planı:
-    - İlgi Alanları: ${interests.join(', ')}. (Eksik kalırsa popüler yerler ekle).
-    - Durak Sayısı: ${stopCount} adet mekan (items).
+    - İlgi Alanları: ${interests.join(', ')}.
+    - KONUM KESİNLİĞİ: Her bir mekanın (items ve diningRecommendations) lat ve lng değerleri GERÇEK DÜNYA koordinatları olmalıdır. Uydurma konum bilgisi vermek uygulamanın harita işlevini bozmaktadır. 
+    - Hassasiyet: Koordinatları en az 6 ondalık hane ile ver (Örn: 41.008238, 28.978359).
+    - Eğer seçilen ilgi alanlarında yeterli mekan yoksa, eksik durakları şehrin bilinen diğer popüler noktalarıyla (gerçek koordinatlarıyla) tamamla.
     - Yemek: Sabah, Öğle, Akşam için 3 adet (diningRecommendations).
-    - Ulaşım Tipi: ${transport}.
+    - Ulaşım: ${transport}. ${transportRules}
     DİL: TÜRKÇE. JSON formatı.`;
 
   const schema = {
@@ -144,15 +157,9 @@ export const createTripWithGemini = async (request: CreateTripRequest, onProgres
   const ai = getClient();
   if (!ai) throw new Error("API bağlantısı kurulamadı.");
 
-  // Paralel olarak Meta veriyi al
-  const metaPromise = fetchMetadata(ai, request);
-  
-  // Gün planlarını paralel olarak başlat
+  const metaData = await fetchMetadata(ai, request);
   const dayPromises = Array.from({ length: request.days }, (_, i) => fetchDayPlan(ai, request, i + 1));
 
-  const metaData = await metaPromise;
-  
-  // İlk veri geldiğinde arayüzü güncellemek için (App.tsx içinde handle edilecek)
   const initialTrip: Partial<Trip> = {
     id: Date.now().toString(),
     ...request,
@@ -183,7 +190,8 @@ export const swapPlaceWithGemini = async (city: string, currentPlace: Place): Pr
     if (!ai) throw new Error("Servis bağlantısı yok.");
     const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `"${city}" şehrindeki "${currentPlace.name}" yerine benzer kategoride (${currentPlace.category}) başka bir yer öner.`,
+        contents: `"${city}" şehrindeki "${currentPlace.name}" yerine benzer kategoride (${currentPlace.category}) ama FARKLI ve GERÇEK bir yer öner. 
+        UYARI: Yeni önerilen yerin koordinatları (lat, lng) Google Maps üzerindeki gerçek noktası olmalıdır.`,
         config: { responseMimeType: 'application/json', responseSchema: placeSchema }
     });
     return JSON.parse(cleanJsonString(response.text || "{}"));
