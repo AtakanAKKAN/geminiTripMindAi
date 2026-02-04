@@ -7,10 +7,10 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
-// Service Worker Kaydı (PWA ve Play Store için Zorunlu)
+// Service Worker Kaydı (Alt dizinler için ./ kullanıldı)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('./service-worker.js')
       .then((registration) => {
         console.log('ServiceWorker başarıyla kaydedildi: ', registration.scope);
       })

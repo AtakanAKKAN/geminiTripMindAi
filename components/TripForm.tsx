@@ -6,7 +6,8 @@ interface TripFormProps {
   onSubmit: (data: CreateTripRequest) => void;
   isLoading: boolean;
   loadingText?: string; 
-  isOffline?: boolean; // Yeni Prop
+  isOffline?: boolean;
+  cooldownSeconds?: number; // Yeni Prop: Kalan bekleme süresi
 }
 
 const POPULAR_CITIES = [
@@ -75,10 +76,9 @@ const paceOptions = [
   { value: PaceType.RELAXED, label: 'Sakin (2-3 Durak/Gün)' },
   { value: PaceType.MODERATE, label: 'Orta (4-5 Durak/Gün)' },
   { value: PaceType.INTENSE, label: 'Yoğun (6-8 Durak/Gün)' }
-  // CUSTOM removed
 ];
 
-export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loadingText, isOffline = false }) => {
+export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loadingText, isOffline = false, cooldownSeconds = 0 }) => {
   const [formData, setFormData] = useState<CreateTripRequest>({
     city: '',
     days: 2,
@@ -96,7 +96,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
 
   const availableStartLocations = formData.city ? (CITY_SPECIFIC_LOCATIONS[formData.city] || [`${formData.city} Merkez`]) : [];
   
-  // REVİZE 1: Tüm alanlar dolu olmalı ve ilgi alanı seçilmeli
   const isFormValid = 
       formData.city !== '' && 
       formData.startLocation !== '' && 
@@ -118,7 +117,7 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
     setFormData({
       ...formData,
       city: newCity,
-      startLocation: cityLocations[0], // Varsayılan olarak ilk lokasyonu seç
+      startLocation: cityLocations[0],
       interests: formData.interests.filter(i => baseInterestOptions.includes(i))
     });
   };
@@ -126,7 +125,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
   const handleDayChange = (delta: number) => {
       setFormData(prev => {
           const newValue = prev.days + delta;
-          // REVİZE 1: Gün sayısı en fazla 6 olabilir
           if (newValue < 1 || newValue > 6) return prev;
           return { ...prev, days: newValue };
       });
@@ -134,7 +132,14 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isFormValid && !isOffline) onSubmit(formData);
+    if (isFormValid && !isOffline && cooldownSeconds === 0) onSubmit(formData);
+  };
+
+  // Bekleme süresi formatlayıcı
+  const formatCooldown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   return (
@@ -218,7 +223,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
 
             {/* Transport & Pace Preference */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Transport Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Ulaşım</label>
                   <div className="flex flex-col gap-2">
@@ -235,7 +239,6 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
                   </div>
                 </div>
 
-                {/* Pace Selection (Updated) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Gezi Temposu</label>
                   <div className="flex flex-col gap-2">
@@ -282,11 +285,20 @@ export const TripForm: React.FC<TripFormProps> = ({ onSubmit, isLoading, loading
             <Button 
               type="submit" 
               fullWidth 
-              disabled={isLoading || !isFormValid || isOffline} 
-              className={`h-14 text-lg ${isOffline ? 'bg-gray-400 cursor-not-allowed hover:bg-gray-400 dark:bg-gray-600' : ''}`}
+              disabled={isLoading || !isFormValid || isOffline || cooldownSeconds > 0} 
+              className={`h-14 text-lg ${(isOffline || cooldownSeconds > 0) ? 'bg-gray-400 cursor-not-allowed hover:bg-gray-400 dark:bg-gray-600' : ''}`}
             >
-              {isOffline ? 'İnternet Bağlantısı Yok' : (isLoading ? 'Planlanıyor...' : 'Rotayı Oluştur')}
+              {isOffline ? 'İnternet Bağlantısı Yok' : (
+                isLoading ? 'Planlanıyor...' : (
+                  cooldownSeconds > 0 ? `Bekleyiniz (${formatCooldown(cooldownSeconds)})` : 'Rotayı Oluştur'
+                )
+              )}
             </Button>
+            {cooldownSeconds > 0 && (
+                <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    API limitleri nedeniyle her yeni gezi için 5 dakika beklemeniz gerekmektedir.
+                </p>
+            )}
           </form>
       )}
     </div>
